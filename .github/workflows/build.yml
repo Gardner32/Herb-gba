@@ -26,22 +26,22 @@ jobs:
             for i in 1 2 3; do dkp-pacman -Syy --noconfirm && break || sleep 2; done
             dkp-pacman -S --noconfirm libgba grit
 
-            echo "== Prep build folder =="
+            echo "== Show repo tree =="
+            ls -la
+            ls -la assets || true
+
+            echo "== Check asset exists (assets/herm.png.PNG) =="
+            [ -f "assets/herm.png.PNG" ] || { echo "assets/herm.png.PNG is missing"; exit 1; }
+
+            echo "== Convert assets/herm.png.PNG -> build/herm.[ch] =="
             mkdir -p build
-
-            echo "== Convert assets/herm.png -> build/herm.[ch] =="
-            grit assets/herm.png -gB4 -gT -pS -ftc -o build/herm
-
-            echo "== Show generated files =="
+            # 4bpp tiles, OBJ palette, transparency from top-left pixel, output C
+            grit "assets/herm.png.PNG" -gB4 -gT -pS -ftc -o build/herm
             ls -la build
 
             echo "== Build ROM =="
-            set -o pipefail
-            make |& tee build.log
-
-            echo "== After make, list files =="
+            make
             ls -la
-            ls -la build || true
 
       - name: Upload build outputs (always)
         if: always()
@@ -51,4 +51,3 @@ jobs:
           path: |
             herm_gba.gba
             build/*
-            build.log
