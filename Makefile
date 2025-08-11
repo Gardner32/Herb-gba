@@ -12,7 +12,7 @@ OBJCOPY := arm-none-eabi-objcopy
 
 # Compile / Link flags
 CFLAGS  := -mthumb -mthumb-interwork -O2 -Wall -Wextra \
-           -ffast-math -fno-strict-aliasing -I$(INCLUDES)
+           -ffast-math -fno-strict-aliasing -I$(INCLUDES) -Ibuild
 LDFLAGS := -specs=gba.specs -mthumb -mthumb-interwork \
            -L$(DEVKITPRO)/libgba/lib
 
