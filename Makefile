@@ -12,7 +12,7 @@ CFLAGS += -ffast-math -fno-strict-aliasing
 CFLAGS += -I$(DEVKITPRO)/libgba/include
 
 LDFLAGS = -specs=gba.specs -mthumb -mthumb-interwork
-
+LDFLAGS += -L$(DEVKITPRO)/libgba/lib
 SOURCES = $(wildcard source/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
