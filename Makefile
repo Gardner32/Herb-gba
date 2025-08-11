@@ -1,33 +1,43 @@
-# Herm GBA Starter Makefile
-.PHONY: all clean
+# GBA Game Makefile
 
-# Toolchain
-PREFIX = arm-none-eabi-
-CC     = $(PREFIX)gcc
-LD     = $(PREFIX)gcc
-OBJCOPY= $(PREFIX)objcopy
+# Game name (this becomes the .gba filename)
+TARGET := herm_gba
 
-CFLAGS = -mthumb -mthumb-interwork -O2 -Wall -Wextra
-CFLAGS += -ffast-math -fno-strict-aliasing
-CFLAGS += -I$(DEVKITPRO)/libgba/include
+# Source and include dirs
+SOURCES := source
+INCLUDES := $(DEVKITPRO)/libgba/include
 
-LDFLAGS = -specs=gba.specs -mthumb -mthumb-interwork
-LDFLAGS += -L$(DEVKITPRO)/libgba/lib
-SOURCES = $(wildcard source/*.c)
-OBJECTS = $(SOURCES:.c=.o)
+# Compiler settings
+CC := arm-none-eabi-gcc
+LD := arm-none-eabi-gcc
+OBJCOPY := arm-none-eabi-objcopy
 
-TARGET = herm_gba
+CFLAGS := -mthumb -mthumb-interwork -O2 -Wall -Wextra \
+          -ffast-math -fno-strict-aliasing \
+          -I$(INCLUDES)
 
+LDFLAGS := -specs=gba.specs -mthumb -mthumb-interwork \
+           -L$(DEVKITPRO)/libgba/lib
+
+# Object files
+OBJS := $(SOURCES)/main.o
+
+# Default rule
 all: $(TARGET).gba
 
-$(TARGET).gba: $(TARGET).elf
-	$(OBJCOPY) -O binary $< $@
-
-$(TARGET).elf: $(OBJECTS)
+# Build ELF
+$(TARGET).elf: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^ -lgba
 
-%.o: %.c
+# Build GBA from ELF
+$(TARGET).gba: $(TARGET).elf
+	$(OBJCOPY) -O binary $< $@
+	@gbafix $@ -t"HERM TEST" -c"01" -m"00"
+
+# Compile C source
+$(SOURCES)/%.o: $(SOURCES)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+# Clean
 clean:
-	rm -f $(OBJECTS) $(TARGET).elf $(TARGET).gba
+	rm -f $(SOURCES)/*.o $(TARGET).elf $(TARGET).gba
