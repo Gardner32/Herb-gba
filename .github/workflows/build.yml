@@ -14,13 +14,20 @@ jobs:
       - name: Convert sprite with grit & build ROM
         uses: addnab/docker-run-action@v3
         with:
-          image: devkitpro/devkitarm:20240626
+          image: devkitpro/devkitarm:latest
           options: -v ${{ github.workspace }}:/work -w /work
           run: |
             set -e
             export DEVKITPRO=/opt/devkitpro
             export DEVKITARM=/opt/devkitpro/devkitARM
             export PATH="$DEVKITARM/bin:$PATH"
+
+            echo "== Ensure required packages =="
+            # Retry a couple times in case the repo is momentarily flaky
+            for i in 1 2 3; do
+              dkp-pacman -Syy --noconfirm && break || sleep 2
+            done
+            dkp-pacman -S --noconfirm libgba grit
 
             echo "== Prep build folder =="
             mkdir -p build
