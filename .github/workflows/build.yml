@@ -11,23 +11,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with devkitARM (no pacman)
+      - name: Convert sprite with grit & build ROM
         uses: addnab/docker-run-action@v3
         with:
-          image: devkitpro/devkitarm:latest
+          image: devkitpro/devkitarm:20240626
           options: -v ${{ github.workspace }}:/work -w /work
           run: |
             set -e
             export DEVKITPRO=/opt/devkitpro
             export DEVKITARM=/opt/devkitpro/devkitARM
             export PATH="$DEVKITARM/bin:$PATH"
-            echo "DEVKITPRO=$DEVKITPRO"
-            echo "DEVKITARM=$DEVKITARM"
-            arm-none-eabi-gcc --version
-            ls -la "$DEVKITPRO/libgba/include" || true
-            ls -la "$DEVKITPRO/libgba/lib" || true
+
+            echo "== Prep build folder =="
+            mkdir -p build
+
+            echo "== Convert assets/herm.png -> build/herm.[ch] =="
+            # 4bpp tiles, OBJ palette, transparency from top-left pixel, output C source
+            grit assets/herm.png -gB4 -gT -pS -ftc -o build/herm
+
+            echo "== Build ROM =="
             make
-            echo "After make:"
             ls -la
 
       - name: Upload ROM artifact
@@ -37,4 +40,4 @@ jobs:
           name: herm_gba
           path: |
             herm_gba.gba
-            **/*.gba
+            build/*
