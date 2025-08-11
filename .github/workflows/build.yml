@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with devkitARM
+      - name: Build with devkitARM (no pacman)
         uses: addnab/docker-run-action@v3
         with:
           image: devkitpro/devkitarm:latest
@@ -21,15 +21,20 @@ jobs:
             export DEVKITPRO=/opt/devkitpro
             export DEVKITARM=/opt/devkitpro/devkitARM
             export PATH="$DEVKITARM/bin:$PATH"
+            echo "DEVKITPRO=$DEVKITPRO"
+            echo "DEVKITARM=$DEVKITARM"
             arm-none-eabi-gcc --version
-            # Sanity check headers/libs are present:
-            ls -la $DEVKITPRO/libgba/include || true
-            ls -la $DEVKITPRO/libgba/lib || true
+            ls -la "$DEVKITPRO/libgba/include" || true
+            ls -la "$DEVKITPRO/libgba/lib" || true
             make
+            echo "After make:"
+            ls -la
 
       - name: Upload ROM artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: herm_gba
-          path: herm_gba.gba
+          path: |
+            herm_gba.gba
+            **/*.gba
