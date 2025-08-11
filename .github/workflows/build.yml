@@ -23,28 +23,32 @@ jobs:
             export PATH="$DEVKITARM/bin:$PATH"
 
             echo "== Ensure required packages =="
-            # Retry a couple times in case the repo is momentarily flaky
-            for i in 1 2 3; do
-              dkp-pacman -Syy --noconfirm && break || sleep 2
-            done
+            for i in 1 2 3; do dkp-pacman -Syy --noconfirm && break || sleep 2; done
             dkp-pacman -S --noconfirm libgba grit
 
             echo "== Prep build folder =="
             mkdir -p build
 
             echo "== Convert assets/herm.png -> build/herm.[ch] =="
-            # 4bpp tiles, OBJ palette, transparency from top-left pixel, output C source
             grit assets/herm.png -gB4 -gT -pS -ftc -o build/herm
 
-            echo "== Build ROM =="
-            make
-            ls -la
+            echo "== Show generated files =="
+            ls -la build
 
-      - name: Upload ROM artifact
+            echo "== Build ROM =="
+            set -o pipefail
+            make |& tee build.log
+
+            echo "== After make, list files =="
+            ls -la
+            ls -la build || true
+
+      - name: Upload build outputs (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: herm_gba
+          name: herm_build_outputs
           path: |
             herm_gba.gba
             build/*
+            build.log
