@@ -35,13 +35,17 @@ jobs:
 
             echo "== Convert assets/herm.png.PNG -> build/herm.[ch] =="
             mkdir -p build
-            # 4bpp tiles, OBJ palette, transparency from top-left pixel, output C
             grit "assets/herm.png.PNG" -gB4 -gT -pS -ftc -o build/herm
             ls -la build
 
             echo "== Build ROM =="
             make
             ls -la
+
+            echo "== Fix permissions for runner =="
+            # Give read/exec on dirs and read on files so upload step can access them
+            chmod -R a+rX build || true
+            [ -f herm_gba.gba ] && chmod a+r herm_gba.gba || true
 
       - name: Upload build outputs (always)
         if: always()
