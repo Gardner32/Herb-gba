@@ -11,12 +11,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with devkitARM (Docker)
+      - name: Install devkitPro GBA libs + Build
         uses: addnab/docker-run-action@v3
         with:
           image: devkitpro/devkitarm:latest
           options: -v ${{ github.workspace }}:/work -w /work
           run: |
+            dkp-pacman -Syu --noconfirm
+            dkp-pacman -S --noconfirm gba-dev
             make
 
       - name: Upload ROM artifact
