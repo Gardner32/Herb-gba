@@ -26,11 +26,9 @@ jobs:
             for i in 1 2 3; do dkp-pacman -Syy --noconfirm && break || sleep 2; done
             dkp-pacman -S --noconfirm libgba grit
 
-            echo "== Show repo tree =="
+            echo "== Check asset exists =="
             ls -la
             ls -la assets || true
-
-            echo "== Check asset exists (assets/herm.png.PNG) =="
             [ -f "assets/herm.png.PNG" ] || { echo "assets/herm.png.PNG is missing"; exit 1; }
 
             echo "== Convert assets/herm.png.PNG -> build/herm.[ch] =="
@@ -42,16 +40,13 @@ jobs:
             make
             ls -la
 
-            echo "== Fix permissions for runner =="
-            # Give read/exec on dirs and read on files so upload step can access them
-            chmod -R a+rX build || true
-            [ -f herm_gba.gba ] && chmod a+r herm_gba.gba || true
+            echo "== Make sure ROM is readable =="
+            [ -f herm_gba.gba ] || { echo "ROM not built"; exit 1; }
+            chmod a+r herm_gba.gba
 
-      - name: Upload build outputs (always)
+      - name: Upload ROM artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: herm_build_outputs
-          path: |
-            herm_gba.gba
-            build/*
+          name: herm_gba
+          path: herm_gba.gba
